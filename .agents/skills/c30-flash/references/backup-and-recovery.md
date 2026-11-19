@@ -1,26 +1,23 @@
 # 备份与恢复
 
-## 用途和输入
+## 从设备备份开始
 
-项目记录的原始备份来自 GeekFlashTool 读回。已核验过一份包含 45 个文件的归档，原始 `super.img`、`vbmeta.img` 和预加载器与仓库清单逐字节匹配，原始 scatter 的八个关键布局项也匹配。该归档缺少 `userdata.img`，个人文件需另行备份。
+请用户提供已解压的 GeekFlashTool 原厂读回目录，或由用户通过设备已有的授权工具读回。可以把目录放在 Git 忽略的 `work/` 下。`tools/check_original_backup.py` 只读取文件，参数是直接包含以下四个文件的目录。
 
-在 `work/` 中对只读备份操作。提取 `super.img`、`vbmeta.img`、`preloader_tb8788p1_64_bsp.bin` 和 `MT6771_Android_scatter.txt` 到同一目录。把该目录传给 `tools/check_original_backup.py`，路径包含空格时加引号。该脚本只读取本地文件。归档格式和解压工具的兼容性以实际测试为准。
-
-| 备份内容 | 通过校验后的用途 |
+| 备份内容 | 校验通过后的用途 |
 | --- | --- |
-| `super.img` | 复制到 `rollback/super.img`。保持 `images/super.img` 使用单独准备和核验的项目镜像。 |
-| `vbmeta.img` | 与已跟踪的 `rollback/vbmeta.img` 核对。 |
-| `preloader_tb8788p1_64_bsp.bin` | 与 `tools/device_preloader.bin` 核对。 |
-| `MT6771_Android_scatter.txt` | 离线核对地址、大小和存储区域。真机操作要求实时 GPT。 |
-| 其余分区 | 原样保留在本机备份，按本设备的厂商恢复方案使用。 |
+| `super.img` | 原厂系统分区镜像。复制到 `rollback/super.img`。 |
+| `vbmeta.img` | 与仓库内 `rollback/vbmeta.img` 比对。 |
+| `preloader_tb8788p1_64_bsp.bin` | 与仓库内 `tools/device_preloader.bin` 比对来源。 |
+| `MT6771_Android_scatter.txt` | 比对八个分区的起始地址、大小和存储区域。 |
 
-## Windows 原厂回退
+每次使用原始备份的副本。适用的镜像和布局由仓库清单限定，其他固件版本应使用其对应的厂商恢复包。项目核对过的 GeekFlashTool 归档缺少 `userdata.img`。使用前确认用户已另行备份需要保留的个人数据。
 
-确认已按仓库要求备齐本地输入，确认已有受授权的设备连接，并使用仓库的标准安全校验。以仓库根目录为工作目录，逐步核对返回码和输出。连接或认证失败时在当前步骤停止。
+## 经授权的原厂恢复
 
-1. `01_Verify_Files.cmd` 完整包通过后，运行 `02_Read_Layout.cmd`。核对当前设备实时 GPT，并由用户确认这是目标设备。登记的指纹用于防止后续接错设备。
-2. 经用户授权恢复原厂镜像后运行 `90_Restore_Original.cmd`。它使用 `rollback/` 下的原始 super 和 vbmeta。任何失败都需要先保留日志并核对分区状态。
-3. 写入成功后运行 `91_Check_Original_Readback.cmd`。必须看到 `super.img` 与 `vbmeta.img` 两项逐文件回读校验通过。
-4. 如用户还需要恢复出厂设置，由用户独立决定并通过设备原厂 Recovery 完成。确认个人数据已另行备份。经用户授权后重启，再检查启动、触摸、Wi-Fi、旋转和相机。
+1. 从仓库根目录运行 `python tools/verify_files.py --stock`，确认 `PASS STOCK FILES`。核对目标设备和它的实时分区布局。请用户指定该设备已有的授权刷机工具。连接或认证失败时交由设备管理员或厂商处理。
+2. 确认用户授权写入后，在工具里使用逐分区写入。支持 scatter 的工具可使用 `rollback/MT6771_Android_scatter.txt`，并核对实际选中且写入的只有 `rollback/` 下的 `super.img` 和 `vbmeta.img`。
+3. 写入成功后用授权工具回读。把两个分区分别保存为 `readback/super.img` 与 `readback/vbmeta.img`，运行 `python tools/verify_files.py --readback original`。两项均须显示 `PASS readback`。如果写入或回读失败，保留日志并按厂商流程核对设备状态。
+4. 按厂商流程启动，验证触摸、Wi-Fi、旋转和相机。恢复出厂设置会清除个人资料，在用户明确要求时单独处理。
 
-Windows 入口和连接要求见仓库现有说明。Linux 可运行离线备份核验与源码测试。现场可用性以授权的设备连接和实际回读结果为准。
+针对人的逐步说明及常见错误见[仓库 README](../../../../README.md)。完整项目包的源码、构建和维护范围见[构建与发行说明](../../../../docs/BUILD_AND_RELEASE.md)。

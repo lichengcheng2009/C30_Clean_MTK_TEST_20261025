@@ -141,6 +141,30 @@ class SafetyTests(unittest.TestCase):
         with self.assertRaises(FileNotFoundError):
             verify(self.root, source_only=True)
 
+    def test_stock_check_skips_only_the_project_super(self):
+        (self.root / 'images/super.img').unlink()
+        script = self.root / 'tools/verify_files.py'
+        shutil.copyfile(ROOT / 'tools/verify_files.py', script)
+
+        def stock_check():
+            return subprocess.run([sys.executable, '-O', str(script), '--stock'],
+                                  capture_output=True, text=True, timeout=10)
+
+        result = stock_check()
+        self.assertEqual(result.returncode, 0, result.stdout)
+        self.assertIn('PASS STOCK FILES (offline)', result.stdout)
+        with self.assertRaises(FileNotFoundError):
+            verify(self.root)
+        for name in ('rollback/super.img', 'rollback/vbmeta.img', 'images/vbmeta.img'):
+            with self.subTest(name=name):
+                path = self.root / name
+                data = path.read_bytes()
+                path.write_bytes(b'damaged')
+                result = stock_check()
+                self.assertEqual(result.returncode, 1, result.stdout)
+                self.assertIn('Hash mismatch: ' + name, result.stdout)
+                path.write_bytes(data)
+
     def test_manifest_omission_and_path_escape_are_rejected(self):
         del self.manifest['images/super.img']
         (self.root / 'SHA256SUMS.json').write_text(json.dumps(self.manifest))

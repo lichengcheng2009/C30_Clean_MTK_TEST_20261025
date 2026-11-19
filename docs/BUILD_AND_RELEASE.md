@@ -19,7 +19,7 @@ python tools/update_manifest.py --check
 python tools/verify_files.py --source
 ```
 
-`--source` 只跳过上述两个外置 super 镜像，其他清单项仍须存在且哈希一致；输出明确为 `SOURCE ONLY (not flashable)`。刷写与擦除入口始终使用完整校验，不接受源码检查结果代替。
+`--source` 只跳过上述两个外置 super 镜像，其他清单项仍须存在且哈希一致；输出明确为 `SOURCE ONLY (not flashable)`。`python tools/verify_files.py --stock` 用于通过厂商授权工具恢复原厂时的离线检查，只跳过 `images/super.img`。详细操作见[新手指南](../README.md)。本仓库已有的 `.cmd` 写入与擦除入口继续使用完整校验。
 
 修改文件并 `git add` 后运行 `python tools/update_manifest.py`。它以 Git 索引文件列表更新源码哈希；未提供的两个本地 super 输入保留原有预期值，不会被静默删除。`.gitattributes` 禁止自动转换换行，保证 Windows/Linux 对相同提交校验相同字节。
 
