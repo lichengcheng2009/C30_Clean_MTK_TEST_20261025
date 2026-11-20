@@ -1,3 +1,12 @@
+
+<p align="left">
+  <img src="./sanlin_high_school_vector.svg" alt="三林中学校徽" width="180">
+</p>
+
+
+
+
+
 # 懒人步骤：
 
 如果你不了解如何刷机，只是想要解锁c30这台设备，那么请把c30通过usb线（质量好的能传输数据的非纯充电线）把你的c30连接上电脑（win推荐，Linux也可，mac欠测试但是未证明不可），并且直接让你的coding agent看本仓库，给予他 **完整访问权限** ，让你的coding agent按照本仓库的skill来做就好。期间泡杯茶看看屏幕，过一会儿就好了。
