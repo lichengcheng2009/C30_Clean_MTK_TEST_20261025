@@ -1,4 +1,4 @@
-
+# 全网最完整最适合小白的 **C30教育平板解控刷机**教程
 <p align="left">
   <img src="./sanlin_high_school_vector.svg" alt="三林中学校徽" width="180">
 </p>
